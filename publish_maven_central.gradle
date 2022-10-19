@@ -1,0 +1,11 @@
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            stagingProfileId = System.getenv("MAVEN_CENTRAL_STAGING_PROFILE_ID")
+            username = System.getenv("MAVEN_CENTRAL_USERNAME")
+            password = System.getenv("MAVEN_CENTRAL_PASSWORD")
+        }
+    }
+}
