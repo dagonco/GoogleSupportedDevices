@@ -17,13 +17,27 @@ internal class Request(private val storage: Storage) {
         val openConnection = URL(URL).openConnection()
         val eTag = openConnection.getHeaderField(ETAG_HEADER)
 
-        return@withContext if (isETagEquals(eTag)) {
-            Log.d("GSD", "This CSV info was parsed previously.")
+        return@withContext try {
+            when {
+                eTag == null -> {
+                    Log.d("GSD", "eTag header was not found. Parsing the file anyways.")
+                    parseCsv(openConnection.getInputStream())
+                }
+
+                isETagEquals(eTag) -> {
+                    Log.d("GSD", "This CSV info was parsed previously.")
+                    null
+                }
+                else -> {
+                    Log.d("GSD", "A new CSV was found. Parsing the file.")
+                    parseCsv(openConnection.getInputStream()).also {
+                        storeEtag(eTag)
+                    }
+                }
+            }
+        } catch (exception: Exception) {
+            Log.d("GSD", "An exception has been thrown. Exception: $exception")
             null
-        } else {
-            Log.d("GSD", "A new CSV was found. Parsing the file.")
-            storeEtag(eTag)
-            parseCsv(openConnection.getInputStream())
         }
     }
 
