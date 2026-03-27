@@ -8,74 +8,60 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.net.HttpURLConnection
 import java.net.URL
 
 internal class Request(private val storage: Storage) {
 
     suspend fun getDevice(): Device? = withContext(Dispatchers.IO) {
+        try {
+            val connection = URL(CSV_URL).openConnection() as HttpURLConnection
 
-        val openConnection = URL(URL).openConnection()
-        val eTag = openConnection.getHeaderField(ETAG_HEADER)
+            val storedETag = storage.getEtag().first()
+            if (storedETag != null) {
+                connection.setRequestProperty(IF_NONE_MATCH_HEADER, storedETag)
+            }
 
-        return@withContext try {
-            when {
-                eTag == null -> {
-                    Log.d("GSD", "eTag header was not found. Parsing the file anyways.")
-                    parseCsv(openConnection.getInputStream())
-                }
-
-                isETagEquals(eTag) -> {
-                    Log.d("GSD", "This CSV info was parsed previously.")
+            return@withContext when (val responseCode = connection.responseCode) {
+                HttpURLConnection.HTTP_NOT_MODIFIED -> {
+                    Log.d(TAG, "ETag matches — cached data is up to date.")
                     null
                 }
-                else -> {
-                    Log.d("GSD", "A new CSV was found. Parsing the file.")
-                    parseCsv(openConnection.getInputStream()).also {
-                        storeEtag(eTag)
+                HttpURLConnection.HTTP_OK -> {
+                    Log.d(TAG, "New CSV available. Parsing.")
+                    val newETag = connection.getHeaderField(ETAG_HEADER)
+                    parseCsv(connection.inputStream).also {
+                        if (newETag != null) storage.storeEtag(newETag)
                     }
+                }
+                else -> {
+                    Log.d(TAG, "Unexpected response code: $responseCode")
+                    null
                 }
             }
         } catch (exception: Exception) {
-            Log.d("GSD", "An exception has been thrown. Exception: $exception")
+            Log.d(TAG, "Exception fetching CSV: $exception")
             null
         }
     }
 
     private fun parseCsv(inputStream: InputStream): Device? {
-
-        var currentDevice: Device? = null
-        val inputStreamReader = InputStreamReader(inputStream, "UTF-16")
-        val bufferedReader = BufferedReader(inputStreamReader)
-
-        bufferedReader.use { reader ->
-            reader.forEachLine { line ->
+        BufferedReader(InputStreamReader(inputStream, "UTF-16")).use { reader ->
+            for (line in reader.lineSequence()) {
                 val data = line.split(",").dropLastWhile(String::isEmpty)
                 if (data.size == 4 && data.getOrNull(2) == android.os.Build.DEVICE) {
                     val (manufacturer, marketName, codename, model) = data
-                    currentDevice = Device(manufacturer, marketName, codename, model)
-                    return@forEachLine
+                    return Device(manufacturer, marketName, codename, model)
                 }
             }
         }
-
-        inputStream.close()
-        inputStreamReader.close()
-        bufferedReader.close()
-
-        return currentDevice
-    }
-
-    private suspend fun isETagEquals(eTag: String): Boolean {
-        val storedETag = storage.getEtag().first()
-        return eTag == storedETag
-    }
-
-    private suspend fun storeEtag(etag: String) {
-        storage.storeEtag(etag)
+        return null
     }
 
     private companion object {
+        private const val TAG = "GSD"
         private const val ETAG_HEADER = "etag"
-        private const val URL = "https://storage.googleapis.com/play_public/supported_devices.csv"
+        private const val IF_NONE_MATCH_HEADER = "If-None-Match"
+        private const val CSV_URL = "https://storage.googleapis.com/play_public/supported_devices.csv"
     }
 }
