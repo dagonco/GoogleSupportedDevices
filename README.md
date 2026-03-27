@@ -13,6 +13,12 @@ Include the library in your `build.gradle`.
 implementation 'io.github.dagonco:gsd:{version}'
 ```
 
+Add the INTERNET permission to your `AndroidManifest.xml`.
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
 ## Usage
 
 To use this library you will need to build an instance of _GoogleSupportedDevices_ and invoke _getDevice()_.
@@ -33,7 +39,7 @@ model = Build.MODEL
 ```
 
 Otherwise, the values that Google has registered will be taken.
- 
 
-[mavenbadge-svg]: https://maven-badges.herokuapp.com/maven-central/io.github.dagonco/gsd/badge.svg
+
+[mavenbadge-svg]: https://img.shields.io/maven-central/v/io.github.dagonco/gsd.svg?label=Maven%20Central
 [mavencentral]: https://search.maven.org/artifact/io.github.dagonco/gsd
