@@ -10,22 +10,26 @@ internal open class Repository(
 ) {
 
     open suspend fun getDevice(): Device {
-        val cachedDevice: Device? = storageDataSource.getDevice().first()
+        val cachedDevice = storageDataSource.getDevice().first()
 
         return if (cachedDevice != null) {
-            Log.d("GSD", "There is an existing cached device, it will be returned")
+            Log.d(TAG, "Returning cached device.")
             cachedDevice
         } else {
-            Log.d("GSD", "There is no cached device. Getting one from Google's CSV.")
+            Log.d(TAG, "No cached device. Fetching from network.")
             val networkDevice = networkDataSource.getDevice()
             if (networkDevice != null) {
-                Log.d("GSD", "Device found in Google's CSV. Caching and returning it.")
+                Log.d(TAG, "Device found in CSV. Caching.")
                 storageDataSource.storeDevice(networkDevice)
                 networkDevice
             } else {
-                Log.d("GSD", "This device has not been found in the Google CSV. Returning default values.")
+                Log.d(TAG, "Device not found in CSV. Using defaults.")
                 storageDataSource.getDefaultDeviceInfo()
             }
         }
+    }
+
+    private companion object {
+        private const val TAG = "GSD"
     }
 }
