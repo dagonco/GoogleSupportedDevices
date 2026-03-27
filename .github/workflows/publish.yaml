@@ -1,4 +1,5 @@
 name: Publish Library
+
 on:
   workflow_dispatch:
     inputs:
@@ -10,22 +11,25 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    # Added permissions to allow the workflow to create tags and releases
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Build library
         run: ./gradlew :gsd:assembleRelease
 
       - name: Unit Test
-        run: ./gradlew :gsd:testReleaseUnitTest
+        run: ./gradlew :gsd:test
 
       - name: Publish
         run: ./gradlew publishReleasePublicationToSonatypeRepository --max-workers 1 closeAndReleaseStagingRepository
@@ -40,8 +44,8 @@ jobs:
 
       - name: Create and push tag
         run: |
-          git config --global user.email "dagonco.dev@gmail.com"
-          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           git tag -a $TAG -m "Release $TAG"
           git push origin $TAG
         env:
