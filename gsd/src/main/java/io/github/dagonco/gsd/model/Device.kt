@@ -1,8 +1,8 @@
 package io.github.dagonco.gsd.model
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 open class Device(
     val manufacturer: String,
     val marketName: String,
