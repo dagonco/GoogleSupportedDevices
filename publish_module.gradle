@@ -3,10 +3,6 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
 }
 
-artifacts {
-    archives androidSourcesJar
-}
-
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
@@ -25,11 +21,11 @@ ext {
 publishing {
     publications {
         release(MavenPublication) {
-            groupId PUBLISH_GROUP_ID
-            artifactId PUBLISH_ARTIFACT_ID
-            version System.getenv("VERSION_NAME")
+            groupId = PUBLISH_GROUP_ID
+            artifactId = PUBLISH_ARTIFACT_ID
+            version = System.getenv("VERSION_NAME")
 
-            artifact("$buildDir/outputs/aar/gsd-release.aar")
+            artifact(layout.buildDirectory.file("outputs/aar/gsd-release.aar").get().asFile)
             artifact androidSourcesJar
 
             pom {
