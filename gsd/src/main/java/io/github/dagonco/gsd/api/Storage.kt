@@ -6,29 +6,25 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
 import io.github.dagonco.gsd.model.Device
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 internal open class Storage(
     private val context: Context,
 ) {
 
-    private val moshi: Moshi = Moshi.Builder().build()
-    private val jsonAdapter: JsonAdapter<Device> = moshi.adapter(Device::class.java)
-
     open fun getDevice(): Flow<Device?> {
         return context.dataStore.data.map { preferences ->
-            preferences[GSD_DEVICE_KEY]?.let { device -> jsonAdapter.fromJson(device) }
+            preferences[GSD_DEVICE_KEY]?.let { Json.decodeFromString<Device>(it) }
         }
     }
 
     open suspend fun storeDevice(deviceInfo: Device) {
-        val toJson = jsonAdapter.toJson(deviceInfo)
         context.dataStore.edit { preferences ->
-            preferences[GSD_DEVICE_KEY] = toJson
+            preferences[GSD_DEVICE_KEY] = Json.encodeToString(deviceInfo)
         }
     }
 
