@@ -4,13 +4,9 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '2.3.20' apply false
     id 'org.jetbrains.kotlin.plugin.compose' version '2.3.20' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.20' apply false
-    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0' apply false
+    id 'com.vanniktech.maven.publish' version '0.36.0' apply false
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
-
-apply from: "${rootProject.projectDir}/publish_maven_central.gradle"
