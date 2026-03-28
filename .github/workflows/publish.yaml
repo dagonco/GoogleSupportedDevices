@@ -11,7 +11,6 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
-    # Added permissions to allow the workflow to create tags and releases
     permissions:
       contents: write
 
@@ -32,15 +31,14 @@ jobs:
         run: ./gradlew :gsd:test
 
       - name: Publish
-        run: ./gradlew publishReleasePublicationToSonatypeRepository --max-workers 1 closeAndReleaseStagingRepository
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
         env:
           VERSION_NAME: ${{ github.event.inputs.versionName }}
-          GPG_KEY: ${{ secrets.GPG_KEY }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          MAVEN_CENTRAL_STAGING_PROFILE_ID: ${{ secrets.MAVEN_CENTRAL_STAGING_PROFILE_ID }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.GPG_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWORD }}
 
       - name: Create and push tag
         run: |
