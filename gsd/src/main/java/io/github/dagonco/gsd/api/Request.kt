@@ -1,21 +1,23 @@
 package io.github.dagonco.gsd.api
 
+import android.os.Build
 import android.util.Log
 import io.github.dagonco.gsd.model.Device
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class Request(private val storage: Storage) {
 
     suspend fun getDevice(): Device? = withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
         try {
-            val connection = URL(CSV_URL).openConnection() as HttpURLConnection
+            connection = URL(CSV_URL).openConnection() as HttpURLConnection
+            connection.connectTimeout = CONNECT_TIMEOUT_MILLIS
+            connection.readTimeout = READ_TIMEOUT_MILLIS
 
             val storedETag = storage.getEtag().first()
             if (storedETag != null) {
@@ -30,7 +32,7 @@ internal class Request(private val storage: Storage) {
                 HttpURLConnection.HTTP_OK -> {
                     Log.d(TAG, "New CSV available. Parsing.")
                     val newETag = connection.getHeaderField(ETAG_HEADER)
-                    parseCsv(connection.inputStream).also {
+                    CsvParser.findDevice(connection.inputStream, Build.DEVICE, Build.MODEL).also {
                         if (newETag != null) storage.storeEtag(newETag)
                     }
                 }
@@ -39,23 +41,14 @@ internal class Request(private val storage: Storage) {
                     null
                 }
             }
+        } catch (exception: CancellationException) {
+            throw exception
         } catch (exception: Exception) {
             Log.d(TAG, "Exception fetching CSV: $exception")
             null
+        } finally {
+            connection?.disconnect()
         }
-    }
-
-    private fun parseCsv(inputStream: InputStream): Device? {
-        BufferedReader(InputStreamReader(inputStream, "UTF-16")).use { reader ->
-            for (line in reader.lineSequence()) {
-                val data = line.split(",").dropLastWhile(String::isEmpty)
-                if (data.size == 4 && data.getOrNull(2) == android.os.Build.DEVICE) {
-                    val (manufacturer, marketName, codename, model) = data
-                    return Device(manufacturer, marketName, codename, model)
-                }
-            }
-        }
-        return null
     }
 
     private companion object {
@@ -63,5 +56,7 @@ internal class Request(private val storage: Storage) {
         private const val ETAG_HEADER = "etag"
         private const val IF_NONE_MATCH_HEADER = "If-None-Match"
         private const val CSV_URL = "https://storage.googleapis.com/play_public/supported_devices.csv"
+        private const val CONNECT_TIMEOUT_MILLIS = 15_000
+        private const val READ_TIMEOUT_MILLIS = 30_000
     }
 }

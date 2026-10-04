@@ -3,16 +3,18 @@ package io.github.dagonco.gsd.data
 import android.util.Log
 import io.github.dagonco.gsd.model.Device
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 internal open class Repository(
     private val networkDataSource: NetworkDataSource,
     private val storageDataSource: StorageDataSource,
 ) {
 
-    open suspend fun getDevice(): Device {
+    open suspend fun getDevice(): Device = mutex.withLock {
         val cachedDevice = storageDataSource.getDevice().first()
 
-        return if (cachedDevice != null) {
+        if (cachedDevice != null) {
             Log.d(TAG, "Returning cached device.")
             cachedDevice
         } else {
@@ -31,5 +33,8 @@ internal open class Repository(
 
     private companion object {
         private const val TAG = "GSD"
+
+        // Shared by all instances so concurrent calls don't download the CSV more than once.
+        private val mutex = Mutex()
     }
 }

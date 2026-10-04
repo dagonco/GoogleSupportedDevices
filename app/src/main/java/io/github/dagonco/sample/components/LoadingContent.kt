@@ -2,9 +2,9 @@ package io.github.dagonco.sample.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
@@ -15,11 +15,11 @@ internal fun LoadingContent() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        CircularProgressIndicator(color = MaterialTheme.colors.primary)
+        CircularProgressIndicator()
         Text(
             text = "Loading device info...",
-            style = MaterialTheme.typography.body2,
-            color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

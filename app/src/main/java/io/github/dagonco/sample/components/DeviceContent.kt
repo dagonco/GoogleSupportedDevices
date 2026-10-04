@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.dagonco.gsd.model.Device
@@ -29,27 +30,43 @@ internal fun DeviceContent(device: Device) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(32.dp),
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = 4.dp,
-            shape = MaterialTheme.shapes.medium,
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = device.marketName,
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = device.manufacturer,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                 Text(
                     text = "DETAILS",
-                    style = MaterialTheme.typography.overline,
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.4f),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
-                Divider()
+                HorizontalDivider()
                 DetailRow(label = "Manufacturer", value = device.manufacturer)
-                Divider()
+                HorizontalDivider()
                 DetailRow(label = "Market Name", value = device.marketName)
-                Divider()
+                HorizontalDivider()
                 DetailRow(label = "Model", value = device.model)
-                Divider()
+                HorizontalDivider()
                 DetailRow(label = "Codename", value = device.codename)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeviceContentPreview() {
+    GoogleSupportedDevicesTheme {
+        DeviceContent(Device("Samsung", "Galaxy S10", "beyond1", "SM-G973F"))
     }
 }
