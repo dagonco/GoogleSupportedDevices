@@ -29,6 +29,10 @@ android {
     }
 }
 
+kotlin {
+    explicitApi()
+}
+
 dependencies {
     implementation "androidx.datastore:datastore-preferences:1.2.1"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
