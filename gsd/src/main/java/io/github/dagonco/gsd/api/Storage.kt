@@ -42,7 +42,8 @@ internal open class Storage(
 
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "gsd_prefs_data_store")
-        private val ETAG_KEY = stringPreferencesKey("gsd_etag")
-        private val GSD_DEVICE_KEY = stringPreferencesKey("gsd_device")
+        // Versioned so that devices missed or mismatched by older parsers are looked up again.
+        private val ETAG_KEY = stringPreferencesKey("gsd_etag_v2")
+        private val GSD_DEVICE_KEY = stringPreferencesKey("gsd_device_v2")
     }
 }
