@@ -29,7 +29,7 @@ class RepositoryTest {
 
         val device = sut.getDevice()
 
-        assertEquals(device, A_CACHED_DEVICE)
+        assertEquals(A_CACHED_DEVICE, device)
     }
 
     @Test
@@ -39,7 +39,7 @@ class RepositoryTest {
 
         val device = sut.getDevice()
 
-        assertEquals(device, A_NETWORK_DEVICE)
+        assertEquals(A_NETWORK_DEVICE, device)
     }
 
 
@@ -61,7 +61,7 @@ class RepositoryTest {
 
         val device = sut.getDevice()
 
-        assertEquals(device, A_DEFAULT_DEVICE)
+        assertEquals(A_DEFAULT_DEVICE, device)
     }
 
     private fun givenThatThereIsACachedDevice() {
@@ -72,11 +72,11 @@ class RepositoryTest {
         whenever(storageDataSource.getDevice()).thenReturn(flowOf(null))
     }
 
-    private fun givenThatThereIsANetworkDevice() = runTest {
+    private suspend fun givenThatThereIsANetworkDevice() {
         whenever(networkDataSource.getDevice()).thenReturn(A_NETWORK_DEVICE)
     }
 
-    private fun givenThatThereIsNotANetworkDevice() = runTest {
+    private suspend fun givenThatThereIsNotANetworkDevice() {
         whenever(networkDataSource.getDevice()).thenReturn(null)
     }
 
@@ -85,8 +85,8 @@ class RepositoryTest {
     }
 
     private companion object {
-        private val A_CACHED_DEVICE: Device = mock()
-        private val A_NETWORK_DEVICE: Device = mock()
-        private val A_DEFAULT_DEVICE: Device = mock()
+        private val A_CACHED_DEVICE = Device("Google", "Pixel 6", "oriole", "Pixel 6")
+        private val A_NETWORK_DEVICE = Device("Samsung", "Galaxy S10", "beyond1", "SM-G973F")
+        private val A_DEFAULT_DEVICE = Device("samsung", "SM-G973F", "beyond1", "SM-G973F")
     }
 }
